@@ -9183,9 +9183,10 @@ textarea.form-control {
 .about-author .desc h3 {
   font-size: 24px; }
 
-.ftco-section {
-  padding: 6em 0;
-  position: relative; }
+  .ftco-section {
+    padding: 2em 0;
+    position: relative;
+}
 
 .ftco-no-pt {
   padding-top: 0 !important; }
