@@ -4,17 +4,22 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 import javax.imageio.ImageIO;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,8 +37,13 @@ public class OCRController {
 		return "index.html";
 	}
 	
+	@GetMapping("/start")
+	public String st() {
+		return "registration.html";
+	}
+	
 	@PostMapping("/upload-multiple")
-    public ResponseEntity<String> handleMultipleFileUpload(@RequestPart("fileInput") MultipartFile userFile) {
+    public ResponseEntity<MyDataDTO> handleMultipleFileUpload(@RequestPart("fileInput") MultipartFile userFile) {
 		Pair p = new Pair(-1, -1);
 		 try {
 			 int suff = 1;
@@ -74,11 +84,170 @@ public class OCRController {
 		 case 9:
 			 break;
 		 }
-		 search(query);
+		 //search(query);
+		 boolean myBooleanValue = get(query);
 		 
-		return ResponseEntity.status(HttpStatus.OK).body(null);
+		 System.out.println(myBooleanValue);
+		 ArrayList<String> myStringList = find(query);
+		 System.out.println(myStringList);
+		 MyDataDTO myDataDTO = new MyDataDTO(myBooleanValue, myStringList);
+		 HttpHeaders headers = new HttpHeaders();
+		 headers.setContentType(MediaType.APPLICATION_JSON);
+		 return ResponseEntity.ok().headers(headers).body(myDataDTO);
 		
     }
+	
+	public ArrayList<String> find(String query) {
+		ArrayList<String> arr = new ArrayList<>();
+		try {
+            // Set your OpenAI API key
+            String apiKey = "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";
+            // Set the OpenAI API endpoint
+            String apiUrl = "https://api.openai.com/v1/chat/completions";
+            // Create the JSON request payload
+            String jsonInputString = "{\n" +
+                    "  \"model\": \"gpt-3.5-turbo\",\n" +
+                    "  \"messages\": [\n" +
+                    "    {\n" +
+                    "      \"role\": \"user\",\n" +
+                    "      \"content\": \" just list the alternatives for " + query + "keywords -> jain\"\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
+
+            // Create the URL object
+            URL url = new URL(apiUrl);
+
+            // Open a connection
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            // Set the request method to POST
+            connection.setRequestMethod("POST");
+
+            // Set the request headers
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Authorization", "Bearer " + apiKey);
+
+            // Enable input/output streams
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+
+            // Write the JSON payload to the request
+            try (DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream())) {
+                outputStream.writeBytes(jsonInputString);
+                outputStream.flush();
+            }
+
+            // Get the response code
+            int responseCode = connection.getResponseCode();
+            //System.out.println("Response Code: " + responseCode);
+
+            // Read the response
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                String line;
+                StringBuffer response = new StringBuffer();
+
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                // Print the response
+                //System.out.println("Response: " + response.toString());
+                String resp = response.toString();
+                int p = resp.indexOf("content") + 12;
+                int e = resp.indexOf("}", p);
+                String full = resp.substring(p, e - 2);
+                String s = "";
+                for(int i=0;i<full.length();i++) {
+                	if(full.charAt(i) == '\\') {
+                		if(s.indexOf(".") == -1) arr.add(s.trim());
+                    	else arr.add(s.substring(s.indexOf(".") + 1, s.length()).trim());
+                		s = "";
+                	}
+                	else s += full.charAt(i);
+                }
+                if(s.length() >= 2) {
+                	if(s.indexOf(".") == -1) arr.add(s.trim());
+                	else arr.add(s.substring(s.indexOf(".") + 1, s.length()).trim());
+                }
+            }
+
+            // Close the connection
+            connection.disconnect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+		return arr;
+	}
+	
+	public boolean get(String query) {
+		try {
+            // Set your OpenAI API key
+            String apiKey = "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";
+            // Set the OpenAI API endpoint
+            String apiUrl = "https://api.openai.com/v1/chat/completions";
+            // Create the JSON request payload
+            String jsonInputString = "{\n" +
+                    "  \"model\": \"gpt-3.5-turbo\",\n" +
+                    "  \"messages\": [\n" +
+                    "    {\n" +
+                    "      \"role\": \"user\",\n" +
+                    "      \"content\": \" answer in yes or no, is " + query + " safe for => jain\"\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
+
+            // Create the URL object
+            URL url = new URL(apiUrl);
+
+            // Open a connection
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            // Set the request method to POST
+            connection.setRequestMethod("POST");
+
+            // Set the request headers
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Authorization", "Bearer " + apiKey);
+
+            // Enable input/output streams
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+
+            // Write the JSON payload to the request
+            try (DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream())) {
+                outputStream.writeBytes(jsonInputString);
+                outputStream.flush();
+            }
+
+            // Get the response code
+            int responseCode = connection.getResponseCode();
+            //System.out.println("Response Code: " + responseCode);
+
+            // Read the response
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                String line;
+                StringBuffer response = new StringBuffer();
+
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                // Print the response
+                //System.out.println("Response: " + response.toString());
+                String resp = response.toString();
+                if(resp.contains("YES") || resp.contains("Yes")) return true;
+            }
+
+            // Close the connection
+            connection.disconnect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+		return false;
+	}
 	
 	private static float compareImages(BufferedImage img1, BufferedImage img2) {
         byte[] pixels1 = ((DataBufferByte) img1.getRaster().getDataBuffer()).getData();
@@ -123,7 +292,7 @@ public class OCRController {
 //                	s += list.charAt(i);
 //                }
 //                if(s.indexOf(".") != -1) arr.add(s);
-//                for(String p : arr) System.out.println(p.substring(0, p.length()));o
+//                for(String p : arr) System.out.println(p.substring(0, p.length()));
             }
 
             // Close the connection
@@ -149,5 +318,40 @@ public class OCRController {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
         return ImageIO.read(byteArrayInputStream);
     }
+    
+    class MyDataDTO {
+        private boolean myBoolean;
+        private List<String> myStringList;
+
+        // Constructors
+
+        public MyDataDTO() {
+            // Default constructor
+        }
+
+        public MyDataDTO(boolean myBoolean, List<String> myStringList) {
+            this.myBoolean = myBoolean;
+            this.myStringList = myStringList;
+        }
+
+        // Getters and setters
+
+        public boolean isMyBoolean() {
+            return myBoolean;
+        }
+
+        public void setMyBoolean(boolean myBoolean) {
+            this.myBoolean = myBoolean;
+        }
+
+        public List<String> getMyStringList() {
+            return myStringList;
+        }
+
+        public void setMyStringList(List<String> myStringList) {
+            this.myStringList = myStringList;
+        }
+    }
+
 	
 }
