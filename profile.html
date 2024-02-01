@@ -147,6 +147,36 @@
       .dark-color {
         color: black;
       }
+
+      @media (max-width: 767px) {
+  .about-list .media {
+    flex-direction: column; /* Change flex direction to column for smaller screens */
+    align-items: flex-start; /* Align items to the start */
+  }
+
+  .about-list label {
+    margin-bottom: 5px; /* Add spacing between labels */
+  }
+
+  .about-list label:after {
+    right: 0; /* Adjust the position of the pseudo-element to the right */
+  }
+}
+
+@media only screen and (orientation: landscape) {
+  .about-list label {
+    width: auto; /* Adjust the width */
+  }
+
+  .about-list label:after {
+    display: none; /* Remove the pseudo-element after */
+  }
+
+  .about-list p {
+    font-size: 14px; /* Adjust the font size */
+    margin-left: 20px; /* Add some margin for better spacing */
+  }
+}
     </style>
     <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800&display=swap"
       rel="stylesheet">
