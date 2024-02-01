@@ -94,14 +94,34 @@
 				padding-bottom: 0px !important;
 				color: #000000 !important;
 			}
+			
+			.navbar {
+        height: 80px; /* Adjust the navbar height as needed */
+    }
+
+    .navbar-brand {
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar-brand img {
+        max-height: 100%; /* Adjust the max-height for a larger logo */
+        width: auto;
+        margin: auto; /* Center the logo vertically */
+        display: block; /* Ensure proper alignment */
+    }
 		</style>
 	</head>
 
 	<body class="goto-here">
 
-		<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-			<div class="container">
-				<a class="navbar-brand" href="index.html">NutriSafe</a>
+		<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" style="padding: 0 20px 0 20px;" id="ftco-navbar">
+			<!-- <div class="container" > -->
+				<a class="navbar-brand" href="index.html">
+					<img src="images/logo.png" alt="NutriSafe Logo" style="width: 80px; height: auto;">
+					NutriSafe
+				</a>
 				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav"
 					aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
 					<span class="oi oi-menu"></span> Menu
@@ -254,7 +274,6 @@
 			<div class="container">
 				<div class="row justify-content-center mb-3 pb-3">
 					<div class="col-md-12 heading-section text-center ftco-animate">
-						<span class="subheading">stay allergy free</span>
 						<h2 class="mb-4">Recommendations</h2>
 					</div>
 				</div>
